@@ -10,8 +10,13 @@ public class LiteDbCache : IDistributedCache
     private const string CacheCollection = "cache";
 
     private readonly IOptions<LiteDbCacheOptions> _options;
+    private readonly ILiteDbCacheDateTimeService _date;
 
-    public LiteDbCache(IOptions<LiteDbCacheOptions> options) => _options = options;
+    public LiteDbCache(IOptions<LiteDbCacheOptions> options, ILiteDbCacheDateTimeService date)
+    {
+        _options = options;
+        _date = date;
+    }
 
     public byte[] Get(string key)
     {
@@ -23,7 +28,16 @@ public class LiteDbCache : IDistributedCache
             .Where(e => e.Key == key)
             .SingleOrDefault();
 
-        return entry?.Value ?? Array.Empty<byte>();
+        if (entry is null) return Array.Empty<byte>();
+
+        if (IsExpired(entry))
+        {
+            Remove(key);
+
+            return Array.Empty<byte>();
+        }
+
+        return entry.Value;
     }
 
     public Task<byte[]> GetAsync(string key, CancellationToken token = default) => Task.FromResult(Get(key));
@@ -35,7 +49,9 @@ public class LiteDbCache : IDistributedCache
 
     public Task RefreshAsync(string key, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        Refresh(key);
+
+        return Task.CompletedTask;
     }
 
     public void Remove(string key)
@@ -60,12 +76,7 @@ public class LiteDbCache : IDistributedCache
 
         var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
-        collection.Insert(new LiteDbCacheEntry
-        {
-            Options = options,
-            Key = key,
-            Value = value,
-        });
+        collection.Insert(new LiteDbCacheEntry(key, value, options));
 
         collection.EnsureIndex(e => e.Key);
     }
@@ -76,13 +87,29 @@ public class LiteDbCache : IDistributedCache
 
         return Task.CompletedTask;
     }
-}
 
-public sealed class LiteDbCacheEntry
-{
-    public DistributedCacheEntryOptions Options { get; set; } = new();
+    private bool IsExpired(LiteDbCacheEntry entry)
+    {
+        var now = _date.Now;
 
-    public byte[] Value { get; set; } = Array.Empty<byte>();
+        if (entry.Options.AbsoluteExpiration.HasValue)
+        {
+            var absolute = entry.Options.AbsoluteExpiration.Value;
+            var relativeToNow = absolute - now;
 
-    public string Key { get; set; } = string.Empty;
+            return relativeToNow.TotalMilliseconds <= 0;
+        }
+        else if (entry.Options.SlidingExpiration.HasValue)
+        {
+            throw new NotImplementedException();
+        }
+        else if (entry.Options.AbsoluteExpirationRelativeToNow.HasValue)
+        {
+            throw new NotImplementedException();
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

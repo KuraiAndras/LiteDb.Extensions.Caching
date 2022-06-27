@@ -12,6 +12,7 @@ public static class ServiceCollectionExtensions
 
         services.AddOptions();
         services.AddSingleton<LiteDbCache>();
+        services.AddSingleton<ILiteDbCacheDateTimeService, LiteDbDateTimeService>();
         services.AddSingleton<IDistributedCache, LiteDbCache>(services => services.GetRequiredService<LiteDbCache>());
         services.Configure(setupAction);
         return services;
