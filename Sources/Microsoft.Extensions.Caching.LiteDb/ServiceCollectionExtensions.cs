@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddLiteDbCache(this IServiceCollection services, Action<LiteDbCacheOptions> setupAction)
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
-        if (setupAction == null) throw new ArgumentNullException(nameof(setupAction));
+        if (setupAction is null) throw new ArgumentNullException(nameof(setupAction));
 
         services.AddOptions();
         services.AddSingleton<LiteDbCache>();
@@ -17,5 +17,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddLiteDbCache(this IServiceCollection services, string path) => AddLiteDbCache(services, options => options.CachePath = path);
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Too much nesing")]
+    public static IServiceCollection AddLiteDbCache(this IServiceCollection services, string path)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+        if (path is null) throw new ArgumentNullException(nameof(path));
+
+        return AddLiteDbCache(services, options => options.CachePath = path);
+    }
 }
