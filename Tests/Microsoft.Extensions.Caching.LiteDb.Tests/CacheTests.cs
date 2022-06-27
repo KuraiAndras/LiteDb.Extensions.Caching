@@ -6,8 +6,6 @@ namespace Microsoft.Extensions.Caching.LiteDb;
 
 public class CacheTests
 {
-    private record SampleData(string? Message);
-
     [Fact]
     public void Cache_Is_Registered()
     {
@@ -25,4 +23,23 @@ public class CacheTests
 
         options!.CachePath.Should().Be(dbPath);
     }
+
+    [Fact]
+    public async Task Cached_Item_Can_Be_Retrieved()
+    {
+        const string cacheValue = "Hello there!";
+        var cacheKey = Guid.NewGuid().ToString();
+
+        var cache = CreateProvider().GetRequiredService<IDistributedCache>();
+
+        await cache.SetStringAsync(cacheKey, cacheValue);
+
+        var result = await cache.GetStringAsync(cacheKey);
+
+        result.Should().Be(cacheValue);
+    }
+
+    private static IServiceProvider CreateProvider() => new ServiceCollection()
+        .AddLiteDbCache(Guid.NewGuid().ToString() + ".db")
+        .BuildServiceProvider(true);
 }
