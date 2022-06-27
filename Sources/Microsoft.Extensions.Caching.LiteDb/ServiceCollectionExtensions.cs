@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
         if (setupAction == null) throw new ArgumentNullException(nameof(setupAction));
 
         services.AddOptions();
-        services.AddSingleton<LiteDbCacheOptions>();
+        services.AddSingleton<LiteDbCache>();
         services.AddSingleton<IDistributedCache, LiteDbCache>(services => services.GetRequiredService<LiteDbCache>());
         services.Configure(setupAction);
         return services;
