@@ -28,6 +28,8 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
     public byte[] Get(string key)
     {
+        var now = _date.Now;
+
         var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
         var entry = collection.Query()
@@ -36,7 +38,7 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
         if (entry is null) return Array.Empty<byte>();
 
-        if (IsExpired(entry))
+        if (IsExpired(entry, now))
         {
             Remove(key);
 
@@ -76,6 +78,8 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
+        var now = _date.Now;
+
         var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
         var oldItem = collection.Query()
@@ -86,8 +90,6 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
         DateTimeOffset? expiry = null;
         TimeSpan? renewal = null;
-
-        var now = _date.Now;
 
         if (options.AbsoluteExpiration.HasValue)
         {
@@ -116,10 +118,8 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
         return Task.CompletedTask;
     }
 
-    private bool IsExpired(LiteDbCacheEntry entry)
+    private static bool IsExpired(LiteDbCacheEntry entry, DateTimeOffset now)
     {
-        var now = _date.Now;
-
         if (entry.Expiry.HasValue)
         {
             return now <= entry.Expiry;
