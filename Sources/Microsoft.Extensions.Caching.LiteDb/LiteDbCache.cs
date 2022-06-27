@@ -1,18 +1,32 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using LiteDB;
+
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.LiteDb;
 
 public class LiteDbCache : IDistributedCache
 {
+    private const string CacheCollection = "cache";
+
+    private readonly IOptions<LiteDbCacheOptions> _options;
+
+    public LiteDbCache(IOptions<LiteDbCacheOptions> options) => _options = options;
+
     public byte[] Get(string key)
     {
-        throw new NotImplementedException();
+        using var db = new LiteDatabase(_options.Value.CachePath);
+
+        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+
+        var entry = collection.Query()
+            .Where(e => e.Key == key)
+            .SingleOrDefault();
+
+        return entry?.Value ?? Array.Empty<byte>();
     }
 
-    public Task<byte[]> GetAsync(string key, CancellationToken token = default)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<byte[]> GetAsync(string key, CancellationToken token = default) => Task.FromResult(Get(key));
 
     public void Refresh(string key)
     {
@@ -36,11 +50,33 @@ public class LiteDbCache : IDistributedCache
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        throw new NotImplementedException();
+        using var db = new LiteDatabase(_options.Value.CachePath);
+
+        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+
+        collection.Insert(new LiteDbCacheEntry
+        {
+            Options = options,
+            Key = key,
+            Value = value,
+        });
+
+        collection.EnsureIndex(e => e.Key);
     }
 
     public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        Set(key, value, options);
+
+        return Task.CompletedTask;
     }
+}
+
+public sealed class LiteDbCacheEntry
+{
+    public DistributedCacheEntryOptions Options { get; set; } = new();
+
+    public byte[] Value { get; set; } = Array.Empty<byte>();
+
+    public string Key { get; set; } = string.Empty;
 }
