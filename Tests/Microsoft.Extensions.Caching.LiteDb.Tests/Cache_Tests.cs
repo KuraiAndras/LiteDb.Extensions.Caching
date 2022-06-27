@@ -102,6 +102,29 @@ public class Cache_Tests
         await sp.DisposeAsync();
     }
 
+    [Fact]
+    public async Task Same_Key_Overwrties_Old_Value()
+    {
+        // Arrange
+        var cacheKey = Guid.NewGuid().ToString();
+        const string cacheValue1 = "Test1";
+        const string cacheValue2 = "Test2";
+
+        var sp = CreateProvider();
+        var cache = sp.GetRequiredService<IDistributedCache>();
+
+        // Act
+        await cache.SetStringAsync(cacheKey, cacheValue1);
+        await cache.SetStringAsync(cacheKey, cacheValue2);
+
+        var result = await cache.GetStringAsync(cacheKey);
+
+        // Assert
+        result.Should().Be(cacheValue2);
+
+        await sp.DisposeAsync();
+    }
+
     private static ServiceProvider CreateProvider() => new ServiceCollection()
         .AddLiteDbCache(Guid.NewGuid().ToString() + ".db")
         .BuildServiceProvider(true);

@@ -5,24 +5,30 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.LiteDb;
 
-public class LiteDbCache : IDistributedCache
+public sealed class LiteDbCache : IDistributedCache, IDisposable
 {
     private const string CacheCollection = "cache";
 
-    private readonly IOptions<LiteDbCacheOptions> _options;
     private readonly ILiteDbCacheDateTimeService _date;
+    private readonly LiteDatabase _db;
 
     public LiteDbCache(IOptions<LiteDbCacheOptions> options, ILiteDbCacheDateTimeService date)
     {
-        _options = options;
         _date = date;
+
+        var liteDbOptions = options.Value;
+
+        var connectionString = new ConnectionString(liteDbOptions.CachePath);
+        if (liteDbOptions.Password is not null) connectionString.Password = liteDbOptions.Password;
+
+        _db = new LiteDatabase(connectionString);
     }
+
+    public void Dispose() => _db.Dispose();
 
     public byte[] Get(string key)
     {
-        using var db = new LiteDatabase(_options.Value.CachePath);
-
-        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+        var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
         var entry = collection.Query()
             .Where(e => e.Key == key)
@@ -56,9 +62,7 @@ public class LiteDbCache : IDistributedCache
 
     public void Remove(string key)
     {
-        using var db = new LiteDatabase(_options.Value.CachePath);
-
-        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+        var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
         collection.DeleteMany(e => e.Key == key);
     }
@@ -72,9 +76,13 @@ public class LiteDbCache : IDistributedCache
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        using var db = new LiteDatabase(_options.Value.CachePath);
+        var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
-        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+        var oldItem = collection.Query()
+            .Where(c => c.Key == key)
+            .SingleOrDefault();
+
+        if (oldItem is not null) Remove(key);
 
         DateTimeOffset? expiry = null;
         TimeSpan? renewal = null;
