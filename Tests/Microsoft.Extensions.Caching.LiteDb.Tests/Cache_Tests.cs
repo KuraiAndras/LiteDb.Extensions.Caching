@@ -124,8 +124,4 @@ public class Cache_Tests
 
         await sp.DisposeAsync();
     }
-
-    private static ServiceProvider CreateProvider() => new ServiceCollection()
-        .AddLiteDbCache(Guid.NewGuid().ToString() + ".db")
-        .BuildServiceProvider(true);
 }

@@ -28,7 +28,7 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
     public byte[] Get(string key)
     {
-        var now = _date.Now;
+        var now = _date.UtcNow;
 
         var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
@@ -78,7 +78,7 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        var now = _date.Now;
+        var now = _date.UtcNow;
 
         var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
@@ -122,7 +122,7 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
     {
         if (entry.Expiry.HasValue)
         {
-            return now <= entry.Expiry;
+            return now >= entry.Expiry;
         }
         else if (entry.Renewal.HasValue)
         {

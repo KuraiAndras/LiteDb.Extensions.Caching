@@ -2,10 +2,10 @@
 
 public interface ILiteDbCacheDateTimeService
 {
-    public DateTimeOffset Now { get; }
+    public DateTimeOffset UtcNow { get; }
 }
 
 public sealed class LiteDbDateTimeService : ILiteDbCacheDateTimeService
 {
-    public DateTimeOffset Now => DateTimeOffset.Now;
+    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 }
