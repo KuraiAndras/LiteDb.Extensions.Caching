@@ -66,7 +66,7 @@ public class Cache_Expiry_Tests
 
         await cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(expiration) });
 
-        await Task.Delay(expiration);
+        await Task.Delay(expiration * 2);
 
         var value = await cache.GetStringAsync(cacheKey);
 
