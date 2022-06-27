@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -10,7 +9,7 @@ public class CacheTests
     private const string CacheValue = "Hello there!";
 
     [Fact]
-    public void Cache_Is_Registered()
+    public async Task Cache_Is_Registered()
     {
         const string dbPath = "TestDb";
 
@@ -25,6 +24,8 @@ public class CacheTests
         options.Should().NotBeNull();
 
         options!.CachePath.Should().Be(dbPath);
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -32,13 +33,16 @@ public class CacheTests
     {
         var cacheKey = Guid.NewGuid().ToString();
 
-        var cache = CreateProvider().GetRequiredService<IDistributedCache>();
+        var sp = CreateProvider();
+        var cache = sp.GetRequiredService<IDistributedCache>();
 
         await cache.SetStringAsync(cacheKey, CacheValue);
 
         var result = await cache.GetStringAsync(cacheKey);
 
         result.Should().Be(CacheValue);
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -46,7 +50,8 @@ public class CacheTests
     {
         var cacheKey = Guid.NewGuid().ToString();
 
-        var cache = CreateProvider().GetRequiredService<IDistributedCache>();
+        var sp = CreateProvider();
+        var cache = sp.GetRequiredService<IDistributedCache>();
 
         await cache.SetStringAsync(cacheKey, CacheValue);
 
@@ -55,9 +60,11 @@ public class CacheTests
         var result = await cache.GetStringAsync(cacheKey);
 
         result.Should().BeNullOrWhiteSpace();
+
+        await sp.DisposeAsync();
     }
 
-    private static IServiceProvider CreateProvider() => new ServiceCollection()
+    private static ServiceProvider CreateProvider() => new ServiceCollection()
         .AddLiteDbCache(Guid.NewGuid().ToString() + ".db")
         .BuildServiceProvider(true);
 }

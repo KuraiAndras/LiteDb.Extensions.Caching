@@ -76,7 +76,27 @@ public class LiteDbCache : IDistributedCache
 
         var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
 
-        collection.Insert(new LiteDbCacheEntry(key, value, options));
+        DateTimeOffset? expiry = null;
+        TimeSpan? renewal = null;
+
+        var now = _date.Now;
+
+        if (options.AbsoluteExpiration.HasValue)
+        {
+            expiry = options.AbsoluteExpiration.Value.ToUniversalTime();
+        }
+        else if (options.AbsoluteExpirationRelativeToNow.HasValue)
+        {
+            expiry = now.Add(options.AbsoluteExpirationRelativeToNow.Value);
+        }
+
+        if (options.SlidingExpiration.HasValue)
+        {
+            renewal = options.SlidingExpiration.Value;
+            expiry = (expiry ?? now) + renewal;
+        }
+
+        collection.Insert(new LiteDbCacheEntry(key, value, expiry, renewal));
 
         collection.EnsureIndex(e => e.Key);
     }
@@ -88,28 +108,6 @@ public class LiteDbCache : IDistributedCache
         return Task.CompletedTask;
     }
 
-    private bool IsExpired(LiteDbCacheEntry entry)
-    {
-        var now = _date.Now;
-
-        if (entry.Options.AbsoluteExpiration.HasValue)
-        {
-            var absolute = entry.Options.AbsoluteExpiration.Value;
-            var relativeToNow = absolute - now;
-
-            return relativeToNow.TotalMilliseconds <= 0;
-        }
-        else if (entry.Options.SlidingExpiration.HasValue)
-        {
-            throw new NotImplementedException();
-        }
-        else if (entry.Options.AbsoluteExpirationRelativeToNow.HasValue)
-        {
-            throw new NotImplementedException();
-        }
-        else
-        {
-            return false;
-        }
-    }
+    // TODO: Implement this
+    private bool IsExpired(LiteDbCacheEntry entry) => false;
 }
