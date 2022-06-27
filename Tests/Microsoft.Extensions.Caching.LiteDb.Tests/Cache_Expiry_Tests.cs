@@ -19,7 +19,7 @@ public class Cache_Expiry_Tests
 
         await cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(expiration) });
 
-        await Task.Delay(expiration);
+        await Task.Delay(expiration * 2);
 
         var value = await cache.GetStringAsync(cacheKey);
 
@@ -40,9 +40,11 @@ public class Cache_Expiry_Tests
         var cache = sp.GetRequiredService<IDistributedCache>();
 
         // Act
-        await cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(1000) });
+        const int expiration = 1000;
 
-        await Task.Delay(500);
+        await cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(expiration) });
+
+        await Task.Delay(expiration / 2);
 
         var value = await cache.GetStringAsync(cacheKey);
 
@@ -87,9 +89,11 @@ public class Cache_Expiry_Tests
         var cache = sp.GetRequiredService<IDistributedCache>();
 
         // Act
-        await cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(1000) });
+        const int expiration = 1000;
 
-        await Task.Delay(500);
+        await cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(expiration) });
+
+        await Task.Delay(expiration / 2);
 
         var value = await cache.GetStringAsync(cacheKey);
 
