@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.LiteDb;
 
-public class CacheTests
+public class Cache_Tests
 {
     [Fact]
     public async Task Cached_Item_Can_Be_Retrieved()
@@ -55,7 +55,7 @@ public class CacheTests
         var cacheKey1 = Guid.NewGuid().ToString();
         var cacheKey2 = Guid.NewGuid().ToString();
         const string cacheValue1 = "Test1";
-        const string cacheValue2 = "Test1";
+        const string cacheValue2 = "Test2";
 
         var sp = CreateProvider();
         var cache = sp.GetRequiredService<IDistributedCache>();
@@ -70,6 +70,8 @@ public class CacheTests
         // Assert
         result1.Should().Be(cacheValue1);
         result2.Should().Be(cacheValue2);
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public class CacheTests
         var cacheKey1 = Guid.NewGuid().ToString();
         var cacheKey2 = Guid.NewGuid().ToString();
         const string cacheValue1 = "Test1";
-        const string cacheValue2 = "Test1";
+        const string cacheValue2 = "Test2";
 
         var sp = CreateProvider();
         var cache = sp.GetRequiredService<IDistributedCache>();
@@ -96,6 +98,8 @@ public class CacheTests
         // Assert
         result1.Should().BeNullOrWhiteSpace();
         result2.Should().Be(cacheValue2);
+
+        await sp.DisposeAsync();
     }
 
     private static ServiceProvider CreateProvider() => new ServiceCollection()

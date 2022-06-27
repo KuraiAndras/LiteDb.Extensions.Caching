@@ -108,6 +108,19 @@ public class LiteDbCache : IDistributedCache
         return Task.CompletedTask;
     }
 
-    // TODO: Implement this
-    private bool IsExpired(LiteDbCacheEntry entry) => false;
+    private bool IsExpired(LiteDbCacheEntry entry)
+    {
+        var now = _date.Now;
+
+        if (entry.Expiry.HasValue)
+        {
+            return now <= entry.Expiry;
+        }
+        else if (entry.Renewal.HasValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        return false;
+    }
 }
