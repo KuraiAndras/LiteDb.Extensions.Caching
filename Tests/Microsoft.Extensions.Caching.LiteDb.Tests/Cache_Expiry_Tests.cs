@@ -25,6 +25,8 @@ public class Cache_Expiry_Tests
 
         // Assert
         value.Should().BeNullOrWhiteSpace();
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -46,6 +48,8 @@ public class Cache_Expiry_Tests
 
         // Assert
         value.Should().Be(cacheValue);
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -68,6 +72,8 @@ public class Cache_Expiry_Tests
 
         // Assert
         value.Should().BeNullOrWhiteSpace();
+
+        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -89,5 +95,7 @@ public class Cache_Expiry_Tests
 
         // Assert
         value.Should().Be(cacheValue);
+
+        await sp.DisposeAsync();
     }
 }
