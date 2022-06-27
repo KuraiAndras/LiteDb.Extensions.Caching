@@ -18,13 +18,13 @@ public class RegistrationTests
 
         // Act
         var cache = sp.GetService<IDistributedCache>();
-        var options = sp.GetService<IOptions<LiteDbCacheOptions>>()?.Value;
+        var options = sp.GetService<IOptions<LiteDbCacheOptions>>()!.Value;
 
         // Assert
         cache.Should().NotBeNull();
         options.Should().NotBeNull();
 
-        options!.CachePath.Should().Be(dbPath);
+        options.CachePath.Should().Be(dbPath);
 
         await sp.DisposeAsync();
     }
