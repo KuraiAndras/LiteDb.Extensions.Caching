@@ -40,12 +40,18 @@ public class LiteDbCache : IDistributedCache
 
     public void Remove(string key)
     {
-        throw new NotImplementedException();
+        using var db = new LiteDatabase(_options.Value.CachePath);
+
+        var collection = db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+
+        collection.DeleteMany(e => e.Key == key);
     }
 
     public Task RemoveAsync(string key, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        Remove(key);
+
+        return Task.CompletedTask;
     }
 
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)

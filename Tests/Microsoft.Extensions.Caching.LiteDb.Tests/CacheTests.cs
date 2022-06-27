@@ -6,6 +6,8 @@ namespace Microsoft.Extensions.Caching.LiteDb;
 
 public class CacheTests
 {
+    private const string CacheValue = "Hello there!";
+
     [Fact]
     public void Cache_Is_Registered()
     {
@@ -27,16 +29,31 @@ public class CacheTests
     [Fact]
     public async Task Cached_Item_Can_Be_Retrieved()
     {
-        const string cacheValue = "Hello there!";
         var cacheKey = Guid.NewGuid().ToString();
 
         var cache = CreateProvider().GetRequiredService<IDistributedCache>();
 
-        await cache.SetStringAsync(cacheKey, cacheValue);
+        await cache.SetStringAsync(cacheKey, CacheValue);
 
         var result = await cache.GetStringAsync(cacheKey);
 
-        result.Should().Be(cacheValue);
+        result.Should().Be(CacheValue);
+    }
+
+    [Fact]
+    public async Task Removed_Item_Is_Removed()
+    {
+        var cacheKey = Guid.NewGuid().ToString();
+
+        var cache = CreateProvider().GetRequiredService<IDistributedCache>();
+
+        await cache.SetStringAsync(cacheKey, CacheValue);
+
+        await cache.RemoveAsync(cacheKey);
+
+        var result = await cache.GetStringAsync(cacheKey);
+
+        result.Should().BeNullOrWhiteSpace();
     }
 
     private static IServiceProvider CreateProvider() => new ServiceCollection()
