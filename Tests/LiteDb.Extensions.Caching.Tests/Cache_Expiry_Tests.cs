@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 
-namespace Microsoft.Extensions.Caching.LiteDb;
+namespace LiteDb.Extensions.Caching;
 
 public sealed class Cache_Expiry_Tests : CacheTestBase
 {

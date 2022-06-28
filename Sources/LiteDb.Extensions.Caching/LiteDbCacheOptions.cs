@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Extensions.Caching.LiteDb;
+﻿namespace LiteDb.Extensions.Caching;
 
 public class LiteDbCacheOptions
 {

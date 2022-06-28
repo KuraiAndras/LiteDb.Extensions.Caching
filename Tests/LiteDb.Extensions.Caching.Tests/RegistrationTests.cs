@@ -4,7 +4,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Caching.LiteDb;
+namespace LiteDb.Extensions.Caching;
 
 public class RegistrationTests
 {

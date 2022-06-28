@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Caching.LiteDb;
+namespace LiteDb.Extensions.Caching;
 
 public static class ServiceCollectionExtensions
 {

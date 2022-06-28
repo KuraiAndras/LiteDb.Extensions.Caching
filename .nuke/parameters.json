@@ -1,4 +1,4 @@
 {
   "$schema": "./build.schema.json",
-  "Solution": "Microsoft.Extensions.Caching.LiteDb.sln"
+  "Solution": "LiteDb.Extensions.Caching.sln"
 }

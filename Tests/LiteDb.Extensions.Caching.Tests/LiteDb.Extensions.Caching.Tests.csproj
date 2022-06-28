@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Sources\Microsoft.Extensions.Caching.LiteDb\Microsoft.Extensions.Caching.LiteDb.csproj" />
+    <ProjectReference Include="..\..\Sources\LiteDb.Extensions.Caching\LiteDb.Extensions.Caching.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using LiteDB;
 
-namespace Microsoft.Extensions.Caching.LiteDb;
+namespace LiteDb.Extensions.Caching;
 
 public sealed class LiteDbCacheEntry
 {

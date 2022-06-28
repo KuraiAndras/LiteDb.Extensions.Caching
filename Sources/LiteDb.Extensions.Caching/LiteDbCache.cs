@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Caching.LiteDb;
+namespace LiteDb.Extensions.Caching;
 
 public sealed class LiteDbCache : IDistributedCache, IDisposable
 {

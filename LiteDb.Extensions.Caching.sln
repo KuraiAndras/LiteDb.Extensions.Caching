@@ -13,9 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Build", "Build\Build.csproj", "{99A29318-A87C-472E-8D54-C7132FDDFCFC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.LiteDb", "Sources\Microsoft.Extensions.Caching.LiteDb\Microsoft.Extensions.Caching.LiteDb.csproj", "{671304BF-8A50-49D7-9645-43C6272394F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteDb.Extensions.Caching", "Sources\LiteDb.Extensions.Caching\LiteDb.Extensions.Caching.csproj", "{671304BF-8A50-49D7-9645-43C6272394F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.LiteDb.Tests", "Tests\Microsoft.Extensions.Caching.LiteDb.Tests\Microsoft.Extensions.Caching.LiteDb.Tests.csproj", "{F1B4455F-02AC-479E-AC48-90E1E8E6C05F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteDb.Extensions.Caching.Tests", "Tests\LiteDb.Extensions.Caching.Tests\LiteDb.Extensions.Caching.Tests.csproj", "{F1B4455F-02AC-479E-AC48-90E1E8E6C05F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
