@@ -118,17 +118,5 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
         return Task.CompletedTask;
     }
 
-    private static bool IsExpired(LiteDbCacheEntry entry, DateTimeOffset now)
-    {
-        if (entry.Expiry.HasValue)
-        {
-            return now >= entry.Expiry;
-        }
-        else if (entry.Renewal.HasValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        return false;
-    }
+    private static bool IsExpired(LiteDbCacheEntry entry, DateTimeOffset now) => entry.Expiry.HasValue && now >= entry.Expiry;
 }

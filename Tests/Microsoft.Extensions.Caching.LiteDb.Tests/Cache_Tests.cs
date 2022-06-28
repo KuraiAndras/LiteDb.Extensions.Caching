@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.LiteDb;
 
-public class Cache_Tests
+public class Cache_Tests : CacheTestBase
 {
     [Fact]
     public async Task Cached_Item_Can_Be_Retrieved()
@@ -12,18 +11,13 @@ public class Cache_Tests
         const string cacheValue = "Hello there!";
         var cacheKey = Guid.NewGuid().ToString();
 
-        var sp = CreateProvider();
-        var cache = sp.GetRequiredService<IDistributedCache>();
-
         // Act
-        await cache.SetStringAsync(cacheKey, cacheValue);
+        await Cache.SetStringAsync(cacheKey, cacheValue);
 
-        var result = await cache.GetStringAsync(cacheKey);
+        var result = await Cache.GetStringAsync(cacheKey);
 
         // Assert
         result.Should().Be(cacheValue);
-
-        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -32,20 +26,15 @@ public class Cache_Tests
         // Arrange
         var cacheKey = Guid.NewGuid().ToString();
 
-        var sp = CreateProvider();
-        var cache = sp.GetRequiredService<IDistributedCache>();
-
         // Act
-        await cache.SetStringAsync(cacheKey, "Test");
+        await Cache.SetStringAsync(cacheKey, "Test");
 
-        await cache.RemoveAsync(cacheKey);
+        await Cache.RemoveAsync(cacheKey);
 
-        var result = await cache.GetStringAsync(cacheKey);
+        var result = await Cache.GetStringAsync(cacheKey);
 
         // Assert
         result.Should().BeNullOrWhiteSpace();
-
-        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -57,21 +46,16 @@ public class Cache_Tests
         const string cacheValue1 = "Test1";
         const string cacheValue2 = "Test2";
 
-        var sp = CreateProvider();
-        var cache = sp.GetRequiredService<IDistributedCache>();
-
         // Act
-        await cache.SetStringAsync(cacheKey1, cacheValue1);
-        await cache.SetStringAsync(cacheKey2, cacheValue2);
+        await Cache.SetStringAsync(cacheKey1, cacheValue1);
+        await Cache.SetStringAsync(cacheKey2, cacheValue2);
 
-        var result1 = await cache.GetStringAsync(cacheKey1);
-        var result2 = await cache.GetStringAsync(cacheKey2);
+        var result1 = await Cache.GetStringAsync(cacheKey1);
+        var result2 = await Cache.GetStringAsync(cacheKey2);
 
         // Assert
         result1.Should().Be(cacheValue1);
         result2.Should().Be(cacheValue2);
-
-        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -83,23 +67,18 @@ public class Cache_Tests
         const string cacheValue1 = "Test1";
         const string cacheValue2 = "Test2";
 
-        var sp = CreateProvider();
-        var cache = sp.GetRequiredService<IDistributedCache>();
-
         // Act
-        await cache.SetStringAsync(cacheKey1, cacheValue1);
-        await cache.SetStringAsync(cacheKey2, cacheValue2);
+        await Cache.SetStringAsync(cacheKey1, cacheValue1);
+        await Cache.SetStringAsync(cacheKey2, cacheValue2);
 
-        await cache.RemoveAsync(cacheKey1);
+        await Cache.RemoveAsync(cacheKey1);
 
-        var result1 = await cache.GetStringAsync(cacheKey1);
-        var result2 = await cache.GetStringAsync(cacheKey2);
+        var result1 = await Cache.GetStringAsync(cacheKey1);
+        var result2 = await Cache.GetStringAsync(cacheKey2);
 
         // Assert
         result1.Should().BeNullOrWhiteSpace();
         result2.Should().Be(cacheValue2);
-
-        await sp.DisposeAsync();
     }
 
     [Fact]
@@ -110,18 +89,13 @@ public class Cache_Tests
         const string cacheValue1 = "Test1";
         const string cacheValue2 = "Test2";
 
-        var sp = CreateProvider();
-        var cache = sp.GetRequiredService<IDistributedCache>();
-
         // Act
-        await cache.SetStringAsync(cacheKey, cacheValue1);
-        await cache.SetStringAsync(cacheKey, cacheValue2);
+        await Cache.SetStringAsync(cacheKey, cacheValue1);
+        await Cache.SetStringAsync(cacheKey, cacheValue2);
 
-        var result = await cache.GetStringAsync(cacheKey);
+        var result = await Cache.GetStringAsync(cacheKey);
 
         // Assert
         result.Should().Be(cacheValue2);
-
-        await sp.DisposeAsync();
     }
 }
