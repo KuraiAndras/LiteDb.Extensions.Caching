@@ -21,6 +21,7 @@ using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
     GitHubActionsImage.UbuntuLatest,
     OnPullRequestBranches = new[] { "*" },
     OnPushBranches = new[] { "main" },
+    OnPushTags = new[] { "*" },
     InvokedTargets = new[] { nameof(Test), nameof(SonarEnd) },
     FetchDepth = 0,
     ImportSecrets = new[] { nameof(SonarProjectKey), nameof(SonarToken), nameof(SonarHostUrl), nameof(SonarOrganization) }
