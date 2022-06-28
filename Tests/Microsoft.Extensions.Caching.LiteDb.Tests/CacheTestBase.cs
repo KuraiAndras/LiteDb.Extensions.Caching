@@ -6,6 +6,7 @@ namespace Microsoft.Extensions.Caching.LiteDb;
 public abstract class CacheTestBase : IAsyncLifetime
 {
     private readonly ServiceProvider _sp;
+    private readonly string _cacheDbPath;
 
     protected CacheTestBase()
     {
@@ -13,9 +14,12 @@ public abstract class CacheTestBase : IAsyncLifetime
 
         if (!Directory.Exists(cachesFolder)) Directory.CreateDirectory(cachesFolder);
 
+        _cacheDbPath = Path.Combine(cachesFolder, $"{Guid.NewGuid()}.db");
+
         _sp = new ServiceCollection()
-            .AddLiteDbCache(Path.Combine(cachesFolder, $"{Guid.NewGuid()}.db"))
+            .AddLiteDbCache(_cacheDbPath)
             .BuildServiceProvider(true);
+
         Cache = _sp.GetRequiredService<IDistributedCache>();
     }
 
@@ -23,5 +27,10 @@ public abstract class CacheTestBase : IAsyncLifetime
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync() => await _sp.DisposeAsync();
+    public async Task DisposeAsync()
+    {
+        await _sp.DisposeAsync();
+
+        File.Delete(_cacheDbPath);
+    }
 }
