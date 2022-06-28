@@ -3,6 +3,7 @@ using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
@@ -21,7 +22,7 @@ using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
     GitHubActionsImage.UbuntuLatest,
     OnPullRequestBranches = new[] { "*" },
     OnPushBranches = new[] { "main" },
-    InvokedTargets = new[] { nameof(Test), nameof(SonarEnd) },
+    InvokedTargets = new[] { nameof(Test), nameof(SonarEnd), nameof(CheckFormatting) },
     FetchDepth = 0,
     ImportSecrets = new[] { nameof(SonarProjectKey), nameof(SonarToken), nameof(SonarHostUrl), nameof(SonarOrganization) }
 )]
@@ -56,6 +57,12 @@ class Build : NukeBuild
     AbsolutePath SourceDirectory => RootDirectory / "Sources";
     AbsolutePath TestsDirectory => RootDirectory / "Tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "Artifacts";
+
+    Target CheckFormatting => _ => _
+        .Before(Clean)
+        .Before(SonarBegin)
+        .Executes(() =>
+            DotNet("format --verify-no-changes"));
 
     Target Clean => _ => _
         .Before(Restore)
