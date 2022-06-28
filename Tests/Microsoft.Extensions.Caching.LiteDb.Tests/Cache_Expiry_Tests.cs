@@ -4,7 +4,7 @@ namespace Microsoft.Extensions.Caching.LiteDb;
 
 public sealed class Cache_Expiry_Tests : CacheTestBase
 {
-    private const int Expiration = 300;
+    private const int Expiration = 500;
 
     [Fact]
     public async Task Absolute_Expired_Entry_Is_Empty()
