@@ -5,7 +5,19 @@ using Microsoft.Extensions.Options;
 
 namespace LiteDb.Extensions.Caching;
 
-public sealed class LiteDbCache : IDistributedCache, IDisposable
+public interface ILiteDbCache : IDistributedCache
+{
+    int CacheItemCount();
+    Task<int> CacheCountAsync(CancellationToken cancellationToken = default);
+
+    void Clear();
+    Task ClearAsync(CancellationToken cancellationToke = default);
+
+    ulong CacheSizeInBytes();
+    Task<ulong> CacheSizeInBytesAsync();
+}
+
+public sealed class LiteDbCache : ILiteDbCache, IDisposable
 {
     private const string CacheCollection = "cache";
 
@@ -141,6 +153,27 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
         return Task.CompletedTask;
     }
+
+    public int CacheItemCount() => _db.GetCollection<LiteDbCacheEntry>(CacheCollection).Query().Count();
+
+    public Task<int> CacheCountAsync(CancellationToken cancellationToken = default) => Task.FromResult(CacheItemCount());
+
+    public void Clear() => _db.GetCollection<LiteDbCacheEntry>(CacheCollection).DeleteAll();
+
+    public Task ClearAsync(CancellationToken cancellationToke = default)
+    {
+        Clear();
+
+        return Task.CompletedTask;
+    }
+
+    public ulong CacheSizeInBytes() => _db
+        .GetCollection<LiteDbCacheEntry>(CacheCollection)
+        .Query()
+        .ToEnumerable()
+        .Aggregate(0UL, static (sum, next) => sum + (ulong)next.Value.Length);
+
+    public Task<ulong> CacheSizeInBytesAsync() => Task.FromResult(CacheSizeInBytes());
 
     private static bool IsExpired(LiteDbCacheEntry entry, DateTimeOffset now) => entry.Expiry.HasValue && now >= entry.Expiry;
 }

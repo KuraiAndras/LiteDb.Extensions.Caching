@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace LiteDb.Extensions.Caching;
 
-public class RegistrationTests
+public class Registration_Tests
 {
     [Fact]
     public async Task Cache_Is_Registered()
@@ -66,6 +66,32 @@ public class RegistrationTests
         rightPassword.Should().NotThrow();
 
         // Cleanup
+        File.Delete(dbPath);
+    }
+
+    [Fact]
+    public async Task All_Instances_Are_The_Same()
+    {
+        // Arrange
+        var dbPath = Path.Combine("Caches", $"{Guid.NewGuid()}.db");
+
+        var sp = new ServiceCollection()
+            .AddLiteDbCache(dbPath)
+            .BuildServiceProvider(true);
+
+        // Act
+        var cache = sp.GetService<IDistributedCache>();
+        var liteDbCacheInterface = sp.GetService<ILiteDbCache>();
+        var liteDbCache = sp.GetService<LiteDbCache>();
+
+        // Assert
+        cache.Should().NotBeNull();
+
+        cache.Should().Be(liteDbCacheInterface);
+        cache.Should().Be(liteDbCache);
+
+        await sp.DisposeAsync();
+
         File.Delete(dbPath);
     }
 }
