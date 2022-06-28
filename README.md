@@ -2,7 +2,9 @@
 
 An `IDistributedCache` implementation for [LiteDB](https://www.litedb.org/).
 
-Usage:
+## Usage
+
+Registering the cache:
 
 ```csharp
 
@@ -19,3 +21,29 @@ services.AddLiteDbCache(options =>
 });
 
 ```
+
+After this the `IDistributedCache` can be used as usual;
+
+## Fine controls
+
+The package also allows you to have some manual controls for managing the cache through the `ILiteDbCache` interface:
+
+```csharp
+public interface ILiteDbCache : IDistributedCache
+{
+    int CacheItemCount();
+    Task<int> CacheCountAsync(CancellationToken cancellationToken = default);
+
+    void Clear();
+    Task ClearAsync(CancellationToken cancellationToke = default);
+
+    ulong CacheSizeInBytes();
+    Task<ulong> CacheSizeInBytesAsync();
+}
+```
+
+## Contributing
+
+Issues and pull requests are welcome.
+
+**If you find a bug, please try to recreate it with a test case in the test project and put it in the newly created issue** (not mandatory)
