@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
         if (path is null) throw new ArgumentNullException(nameof(path));
+        if (password is null) throw new ArgumentNullException(nameof(password));
 
         return AddLiteDbCache(services, options =>
         {
