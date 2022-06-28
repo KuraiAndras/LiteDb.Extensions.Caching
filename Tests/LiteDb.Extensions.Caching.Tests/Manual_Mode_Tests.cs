@@ -40,6 +40,7 @@ public sealed class Manual_Mode_Tests : CacheTestBase
         var item = await cache.GetStringAsync("Test0");
         var count = await cache.CacheCountAsync();
 
+
         // Assert
         item.Should().BeNullOrWhiteSpace();
         count.Should().Be(0);

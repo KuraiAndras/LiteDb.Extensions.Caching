@@ -59,7 +59,7 @@ public class Cache_Tests : CacheTestBase
     }
 
     [Fact]
-    public async Task The_Right_Item_Is_Removed()
+    public  async Task The_Right_Item_Is_Removed()
     {
         // Arrange
         var cacheKey1 = Guid.NewGuid().ToString();
