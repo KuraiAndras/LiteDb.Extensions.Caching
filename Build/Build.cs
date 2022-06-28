@@ -128,7 +128,8 @@ class Build : NukeBuild
             .SetLogin(SonarToken)
             .SetServer(SonarHostUrl)
             .SetOrganization(SonarOrganization)
-            .SetOpenCoverPaths("**/*.opencover.xml")));
+            .SetOpenCoverPaths("**/*.opencover.xml")
+            .SetVersion(GitVersion.NuGetVersionV2)));
 
     Target SonarEnd => _ => _
         .DependsOn(SonarBegin)
