@@ -1,6 +1,6 @@
 using Nuke.Common;
-using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.CI;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.Coverlet;
@@ -8,6 +8,7 @@ using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 
+using static System.IO.Directory;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -21,6 +22,15 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     InvokedTargets = new[] { nameof(Test) },
     FetchDepth = 0
 )]
+[GitHubActions
+(
+    "publish",
+    GitHubActionsImage.UbuntuLatest,
+    OnPushTags = new[] { "*" },
+    InvokedTargets = new[] { nameof(PushToNuGet) },
+    FetchDepth = 0,
+    ImportSecrets = new[] { nameof(NugetApiUrl), nameof(NugetApiKey) }
+)]
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
 {
@@ -29,10 +39,13 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter] readonly string NugetApiUrl = default!;
+    [Parameter] readonly string NugetApiKey = default!;
+
     [Solution] readonly Solution Solution = default!;
     [GitVersion] readonly GitVersion GitVersion = default!;
 
-    AbsolutePath SourceDirectory => RootDirectory / "Source";
+    AbsolutePath SourceDirectory => RootDirectory / "Sources";
     AbsolutePath TestsDirectory => RootDirectory / "Tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "Artifacts";
 
@@ -57,9 +70,7 @@ class Build : NukeBuild
             DotNetBuild(s => s
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion)
+                .SetVersion(GitVersion.NuGetVersionV2)
                 .EnableNoRestore()));
 
     Target Test => _ => _
@@ -70,4 +81,30 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .EnableCollectCoverage()
                 .SetCoverletOutputFormat(CoverletOutputFormat.opencover)));
+
+    Target Pack => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+            DotNetPack(s => s
+                .SetProject(Solution)
+                .SetConfiguration(Configuration)
+                .SetVersion(GitVersion.NuGetVersionV2)));
+
+    Target MoveArtifacts => _ => _
+        .DependsOn(Pack)
+        .Executes(() =>
+            EnumerateFiles(Solution.Directory, "*.nupkg", SearchOption.AllDirectories)
+                .Where(n => !n.EndsWith("symbols.nupkg"))
+                .ForEach(x => CopyFileToDirectory(x, ArtifactsDirectory, FileExistsPolicy.Overwrite)));
+
+    Target PushToNuGet => _ => _
+        .DependsOn(MoveArtifacts)
+        .Requires(() => NugetApiUrl, () => NugetApiKey)
+        .Executes(() =>
+            EnumerateFiles(ArtifactsDirectory, "*.nupkg")
+                .ForEach(x =>
+                    DotNetNuGetPush(s => s
+                        .SetTargetPath(x)
+                        .SetSource(NugetApiUrl)
+                        .SetApiKey(NugetApiKey))));
 }
