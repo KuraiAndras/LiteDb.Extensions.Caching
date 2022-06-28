@@ -6,12 +6,14 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.SonarScanner;
 using Nuke.Common.Utilities.Collections;
 
 using static System.IO.Directory;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.SonarScanner.SonarScannerTasks;
 
 [GitHubActions
 (
@@ -19,8 +21,9 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     GitHubActionsImage.UbuntuLatest,
     OnPullRequestBranches = new[] { "*" },
     OnPushBranches = new[] { "main" },
-    InvokedTargets = new[] { nameof(Test) },
-    FetchDepth = 0
+    InvokedTargets = new[] { nameof(Test), nameof(SonarEnd) },
+    FetchDepth = 0,
+    ImportSecrets = new[] { nameof(SonarProjectKey), nameof(SonarToken), nameof(SonarHostUrl), nameof(SonarOrganization) }
 )]
 [GitHubActions
 (
@@ -39,8 +42,13 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Parameter] readonly string NugetApiUrl = default!;
-    [Parameter] readonly string NugetApiKey = default!;
+    [Parameter("NuGet feed to use")] readonly string NugetApiUrl = default!;
+    [Parameter("NuGet API key")] readonly string NugetApiKey = default!;
+
+    [Parameter("Sonar project key")] readonly string SonarProjectKey = default!;
+    [Parameter("Sonar token")] readonly string SonarToken = default!;
+    [Parameter("Sonar host URL")] readonly string SonarHostUrl = default!;
+    [Parameter("Sonar organization")] readonly string SonarOrganization = default!;
 
     [Solution] readonly Solution Solution = default!;
     [GitVersion] readonly GitVersion GitVersion = default!;
@@ -107,4 +115,25 @@ class Build : NukeBuild
                         .SetTargetPath(x)
                         .SetSource(NugetApiUrl)
                         .SetApiKey(NugetApiKey))));
+
+    Target SonarBegin => _ => _
+        .Before(Restore)
+        .Requires(() => SonarProjectKey)
+        .Requires(() => SonarToken)
+        .Requires(() => SonarHostUrl)
+        .Requires(() => SonarOrganization)
+        .Executes(() => SonarScannerBegin(s => s
+            .SetFramework("net5.0")
+            .SetProjectKey(SonarProjectKey)
+            .SetLogin(SonarToken)
+            .SetServer(SonarHostUrl)
+            .SetOrganization(SonarOrganization)
+            .SetOpenCoverPaths("**/*.opencover.xml")));
+
+    Target SonarEnd => _ => _
+        .DependsOn(SonarBegin)
+        .After(Test)
+        .Executes(() => SonarScannerEnd(s => s
+            .SetFramework("net5.0")
+            .SetLogin(SonarToken)));
 }

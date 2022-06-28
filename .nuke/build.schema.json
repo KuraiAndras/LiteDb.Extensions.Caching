@@ -48,10 +48,12 @@
           "description": "Disables displaying the NUKE logo"
         },
         "NugetApiKey": {
-          "type": "string"
+          "type": "string",
+          "description": "NuGet API key"
         },
         "NugetApiUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "NuGet feed to use"
         },
         "Partition": {
           "type": "string",
@@ -84,6 +86,8 @@
               "Pack",
               "PushToNuGet",
               "Restore",
+              "SonarBegin",
+              "SonarEnd",
               "Test"
             ]
           }
@@ -91,6 +95,22 @@
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
+        },
+        "SonarHostUrl": {
+          "type": "string",
+          "description": "Sonar host URL"
+        },
+        "SonarOrganization": {
+          "type": "string",
+          "description": "Sonar organization"
+        },
+        "SonarProjectKey": {
+          "type": "string",
+          "description": "Sonar project key"
+        },
+        "SonarToken": {
+          "type": "string",
+          "description": "Sonar token"
         },
         "Target": {
           "type": "array",
@@ -104,6 +124,8 @@
               "Pack",
               "PushToNuGet",
               "Restore",
+              "SonarBegin",
+              "SonarEnd",
               "Test"
             ]
           }
