@@ -4,6 +4,8 @@ namespace Microsoft.Extensions.Caching.LiteDb;
 
 public sealed class Cache_Expiry_Tests : CacheTestBase
 {
+    private const int Expiration = 300;
+
     [Fact]
     public async Task Absolute_Expired_Entry_Is_Empty()
     {
@@ -11,11 +13,9 @@ public sealed class Cache_Expiry_Tests : CacheTestBase
         var cacheKey = Guid.NewGuid().ToString();
 
         // Act
-        const int expiration = 500;
+        await Cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(Expiration) });
 
-        await Cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(expiration) });
-
-        await Task.Delay(expiration * 2);
+        await Task.Delay(Expiration * 2);
 
         var value = await Cache.GetStringAsync(cacheKey);
 
@@ -31,11 +31,9 @@ public sealed class Cache_Expiry_Tests : CacheTestBase
         const string cacheValue = "Test";
 
         // Act
-        const int expiration = 1000;
+        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(Expiration) });
 
-        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(expiration) });
-
-        await Task.Delay(expiration / 2);
+        await Task.Delay(Expiration / 2);
 
         var value = await Cache.GetStringAsync(cacheKey);
 
@@ -50,11 +48,9 @@ public sealed class Cache_Expiry_Tests : CacheTestBase
         var cacheKey = Guid.NewGuid().ToString();
 
         // Act
-        const int expiration = 500;
+        await Cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(Expiration) });
 
-        await Cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(expiration) });
-
-        await Task.Delay(expiration * 2);
+        await Task.Delay(Expiration * 2);
 
         var value = await Cache.GetStringAsync(cacheKey);
 
@@ -70,11 +66,9 @@ public sealed class Cache_Expiry_Tests : CacheTestBase
         const string cacheValue = "Test";
 
         // Act
-        const int expiration = 1000;
+        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(Expiration) });
 
-        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMilliseconds(expiration) });
-
-        await Task.Delay(expiration / 2);
+        await Task.Delay(Expiration / 2);
 
         var value = await Cache.GetStringAsync(cacheKey);
 
