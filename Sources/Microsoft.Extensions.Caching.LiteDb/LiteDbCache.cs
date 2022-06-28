@@ -45,6 +45,8 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
             return Array.Empty<byte>();
         }
 
+        RefreshInternal(key, now, collection, entry);
+
         return entry.Value;
     }
 
@@ -52,7 +54,15 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
 
     public void Refresh(string key)
     {
-        throw new NotImplementedException();
+        var now = _date.UtcNow;
+
+        var collection = _db.GetCollection<LiteDbCacheEntry>(CacheCollection);
+
+        var entry = collection.Query()
+            .Where(e => e.Key == key)
+            .SingleOrDefault();
+
+        RefreshInternal(key, now, collection, entry);
     }
 
     public Task RefreshAsync(string key, CancellationToken token = default)
@@ -60,6 +70,22 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
         Refresh(key);
 
         return Task.CompletedTask;
+    }
+
+    private void RefreshInternal(string key, DateTimeOffset now, ILiteCollection<LiteDbCacheEntry> collection, LiteDbCacheEntry entry)
+    {
+        if (!entry.Renewal.HasValue) return;
+
+        if (IsExpired(entry, now))
+        {
+            Remove(key);
+
+            return;
+        }
+
+        entry.Expiry = now + entry.Renewal;
+
+        collection.Update(entry);
     }
 
     public void Remove(string key)
@@ -107,8 +133,6 @@ public sealed class LiteDbCache : IDistributedCache, IDisposable
         }
 
         collection.Insert(new LiteDbCacheEntry(key, value, expiry, renewal));
-
-        collection.EnsureIndex(e => e.Key);
     }
 
     public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)

@@ -75,4 +75,71 @@ public sealed class Cache_Expiry_Tests : CacheTestBase
         // Assert
         value.Should().Be(cacheValue);
     }
+
+    [Fact]
+    public async Task Sliding_Expired_Is_Empty()
+    {
+        // Arrange
+        var cacheKey = Guid.NewGuid().ToString();
+
+        // Act
+        await Cache.SetStringAsync(cacheKey, "Test", new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromMilliseconds(Expiration) });
+
+        await Task.Delay(Expiration * 2);
+
+        var value = await Cache.GetStringAsync(cacheKey);
+
+        // Assert
+        value.Should().BeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Sliding_Not_Expired_Is_Not_Empty()
+    {
+        // Arrange
+        var cacheKey = Guid.NewGuid().ToString();
+        const string cacheValue = "Test";
+
+        // Act
+        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromMilliseconds(Expiration) });
+
+        await Task.Delay(Expiration / 2);
+
+        var value = await Cache.GetStringAsync(cacheKey);
+
+        // Assert
+        value.Should().Be(cacheValue);
+    }
+
+    [Fact]
+    public async Task Sliding_Is_Renewed()
+    {
+        // Arrange
+        var cacheKey = Guid.NewGuid().ToString();
+        const string cacheValue = "Test";
+
+        // Act
+        await Cache.SetStringAsync(cacheKey, cacheValue, new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromMilliseconds(Expiration) });
+
+        await Task.Delay(Expiration / 2);
+
+        var value1 = await Cache.GetStringAsync(cacheKey);
+
+        await Task.Delay(Expiration / 2);
+
+        var value2 = await Cache.GetStringAsync(cacheKey);
+
+        await Task.Delay(Expiration / 2);
+
+        await Cache.RefreshAsync(cacheKey);
+
+        await Task.Delay(Expiration / 2);
+
+        var value3 = await Cache.GetStringAsync(cacheKey);
+
+        // Assert
+        value1.Should().Be(cacheValue);
+        value2.Should().Be(value1);
+        value3.Should().Be(value2);
+    }
 }

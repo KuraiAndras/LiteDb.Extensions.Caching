@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.Caching.LiteDb;
+﻿using LiteDB;
+
+namespace Microsoft.Extensions.Caching.LiteDb;
 
 public sealed class LiteDbCacheEntry
 {
@@ -19,5 +21,6 @@ public sealed class LiteDbCacheEntry
 
     public byte[] Value { get; set; } = Array.Empty<byte>();
 
+    [BsonId]
     public string Key { get; set; } = string.Empty;
 }
