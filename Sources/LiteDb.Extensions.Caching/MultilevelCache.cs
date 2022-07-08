@@ -53,7 +53,7 @@ public class MultilevelCache : IMultiLevelCache
             {
                 var itemString = await _distributedCache.GetStringAsync(key, cancellationToken);
 
-                T? item;
+                T item;
                 if (string.IsNullOrWhiteSpace(itemString))
                 {
                     item = await factory(cancellationToken);
@@ -62,12 +62,12 @@ public class MultilevelCache : IMultiLevelCache
                 }
                 else
                 {
-                    item = _serializer.DeSerialize<T>(itemString);
+                    item = _serializer.DeSerialize<T>(itemString)!;
                 }
 
                 _memoryCache.Set(key, item, memoryEntry);
 
-                return item!;
+                return item;
             }
             else
             {
