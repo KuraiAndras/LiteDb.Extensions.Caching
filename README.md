@@ -42,6 +42,17 @@ public interface ILiteDbCache : IDistributedCache
 }
 ```
 
+## Multi level cache
+
+The library also adds a multi level cache implementation through the `IMultiLevelCache`, which first tries to retrieve an object from the `IMemoryCache`, then from the `IDistributedCache`. For serialization it uses `System.Text.Json`. Another string-based serialized can be used by implementing the `IMultiLevelCacheSerializer` interface and then registering it through DI.
+
+```csharp
+var key = Guid.NewGuid().ToString();
+var value = new TestData(Guid.NewGuid().ToString());
+
+var storedValue = await MultiLevelCache.GetOrSetAsync(key, (_) => Task.FromResult(value), new MemoryCacheEntryOptions(), new DistributedCacheEntryOptions());
+```
+
 ## Contributing
 
 Issues and pull requests are welcome.
