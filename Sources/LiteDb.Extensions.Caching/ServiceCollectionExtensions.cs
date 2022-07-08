@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ILiteDbCacheDateTimeService, LiteDbDateTimeService>();
 
+        services.AddMemoryCache();
+        services.AddSingleton<IMultiLevelCache, MultilevelCache>();
+        services.AddSingleton<IMultiLevelCacheSerializer, JsonMultiLevelCacheSerializer>();
+
         services.Configure(setupAction);
         return services;
     }

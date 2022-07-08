@@ -21,9 +21,11 @@ public abstract class CacheTestBase : IAsyncLifetime
             .BuildServiceProvider(true);
 
         Cache = _sp.GetRequiredService<IDistributedCache>();
+        MultiLevelCache = _sp.GetRequiredService<IMultiLevelCache>();
     }
 
     protected IDistributedCache Cache { get; }
+    protected IMultiLevelCache MultiLevelCache { get; }
 
     public Task InitializeAsync() => Task.CompletedTask;
 
