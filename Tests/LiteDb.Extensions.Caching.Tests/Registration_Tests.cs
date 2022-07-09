@@ -94,4 +94,18 @@ public class Registration_Tests
 
         File.Delete(dbPath);
     }
+
+    [Fact]
+    public void Calling_Add_Does_Not_Add_Duplicates()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var firstCount = services.AddLiteDbCache(string.Empty).Count;
+        var secondCount = services.AddLiteDbCache(string.Empty).Count;
+
+        // Assert
+        firstCount.Should().Be(secondCount);
+    }
 }
