@@ -41,7 +41,7 @@ public class MultilevelCache : IMultiLevelCache
         CancellationToken cancellationToken = default
     )
     {
-        var semaphore = _locks.GetOrAdd(key, new SemaphoreSlim(1, 1));
+        var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
 
         await semaphore.WaitAsync(cancellationToken);
 
