@@ -7,12 +7,30 @@ namespace LiteDb.Extensions.Caching;
 
 public interface IMultiLevelCache
 {
+    Task<T?> GetAsync<T>
+    (
+        string key,
+        IMultiLevelCacheSerializer? serializerOverride = null,
+        CancellationToken cancellationToken = default
+    );
+
+    Task SetAsync<T>
+    (
+        string key,
+        T item,
+        MemoryCacheEntryOptions memoryEntry,
+        DistributedCacheEntryOptions persistentEntry,
+        IMultiLevelCacheSerializer? serializerOverride = null,
+        CancellationToken cancellationToken = default
+    );
+
     Task<T> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
         MemoryCacheEntryOptions memoryEntry,
         DistributedCacheEntryOptions persistentEntry,
+        IMultiLevelCacheSerializer? serializerOverride = null,
         CancellationToken cancellationToken = default
     );
 }
@@ -32,12 +50,70 @@ public class MultilevelCache : IMultiLevelCache
         _serializer = serializer;
     }
 
+    public async Task<T?> GetAsync<T>(string key, IMultiLevelCacheSerializer? serializerOverride = null, CancellationToken cancellationToken = default)
+    {
+        var memoryItem = _memoryCache.Get(key);
+
+        if (memoryItem is null || memoryItem.Equals(default))
+        {
+            var itemString = await _distributedCache.GetStringAsync(key, cancellationToken);
+
+#pragma warning disable IDE0046 // Convert to conditional expression
+            if (!string.IsNullOrWhiteSpace(itemString))
+            {
+                return serializerOverride is null
+                    ? _serializer.DeSerialize<T>(itemString)
+                    : serializerOverride.DeSerialize<T>(itemString);
+            }
+            else
+            {
+                return default;
+            }
+#pragma warning restore IDE0046 // Convert to conditional expression
+        }
+        else
+        {
+            return (T)memoryItem;
+        }
+    }
+
+    public async Task SetAsync<T>
+    (
+        string key,
+        T item,
+        MemoryCacheEntryOptions memoryEntry,
+        DistributedCacheEntryOptions persistentEntry,
+        IMultiLevelCacheSerializer? serializerOverride = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
+
+        await semaphore.WaitAsync(cancellationToken);
+
+        try
+        {
+            _memoryCache.Set(key, item, memoryEntry);
+
+            var serializedItem = serializerOverride is null
+                    ? _serializer.Serialize(item)
+                    : serializerOverride.Serialize(item);
+
+            await _distributedCache.SetStringAsync(key, serializedItem, persistentEntry, cancellationToken);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
     public async Task<T> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
         MemoryCacheEntryOptions memoryEntry,
         DistributedCacheEntryOptions persistentEntry,
+        IMultiLevelCacheSerializer? serializerOverride = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -62,7 +138,9 @@ public class MultilevelCache : IMultiLevelCache
                 }
                 else
                 {
-                    item = _serializer.DeSerialize<T>(itemString)!;
+                    item = serializerOverride is null
+                        ? _serializer.DeSerialize<T>(itemString)!
+                        : serializerOverride.DeSerialize<T>(itemString)!;
                 }
 
                 _memoryCache.Set(key, item, memoryEntry);
