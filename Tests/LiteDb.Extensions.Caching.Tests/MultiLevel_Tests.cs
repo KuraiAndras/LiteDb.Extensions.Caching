@@ -19,7 +19,6 @@ public class MultiLevel_Tests : CacheTestBase
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return new object[] { null!};
             yield return new object[] { new JsonMultiLevelCacheSerializer() };
             yield return new object[] { new NewtonsoftSerializer() };
         }
@@ -29,7 +28,7 @@ public class MultiLevel_Tests : CacheTestBase
 
     [Theory]
     [ClassData(typeof(SerializerData))]
-    public async Task Item_Can_Be_Retreived_From_Empty_Cache(IMultiLevelCacheSerializer? serializer)
+    public async Task Item_Can_Be_Retreived_From_Empty_Cache(IMultiLevelCacheSerializer serializer)
     {
         // Arrange
         var key = Guid.NewGuid().ToString();
@@ -44,7 +43,7 @@ public class MultiLevel_Tests : CacheTestBase
 
     [Theory]
     [ClassData(typeof(SerializerData))]
-    public async Task Item_Can_Be_Retreived_From_Non_Empty_Cache(IMultiLevelCacheSerializer? serializer)
+    public async Task Item_Can_Be_Retreived_From_Non_Empty_Cache(IMultiLevelCacheSerializer serializer)
     {
         // Arrange
         var key = Guid.NewGuid().ToString();
@@ -60,7 +59,7 @@ public class MultiLevel_Tests : CacheTestBase
 
     [Theory]
     [ClassData(typeof(SerializerData))]
-    public async Task Expiry_From_Memory_Is_Retrieved(IMultiLevelCacheSerializer? serializer)
+    public async Task Expiry_From_Memory_Is_Retrieved(IMultiLevelCacheSerializer serializer)
     {
         // Arrange
         var key = Guid.NewGuid().ToString();
@@ -81,7 +80,7 @@ public class MultiLevel_Tests : CacheTestBase
 
     [Theory]
     [ClassData(typeof(SerializerData))]
-    public async Task Item_Can_Be_Retreived_From_Empty_Cache_Manual(IMultiLevelCacheSerializer? serializer)
+    public async Task Item_Can_Be_Retreived_From_Empty_Cache_Manual(IMultiLevelCacheSerializer serializer)
     {
         // Arrange
         var key = Guid.NewGuid().ToString();
@@ -97,7 +96,7 @@ public class MultiLevel_Tests : CacheTestBase
 
     [Theory]
     [ClassData(typeof(SerializerData))]
-    public async Task Expiry_From_Memory_Is_Retrieved_Manual(IMultiLevelCacheSerializer? serializer)
+    public async Task Expiry_From_Memory_Is_Retrieved_Manual(IMultiLevelCacheSerializer serializer)
     {
         // Arrange
         var key = Guid.NewGuid().ToString();

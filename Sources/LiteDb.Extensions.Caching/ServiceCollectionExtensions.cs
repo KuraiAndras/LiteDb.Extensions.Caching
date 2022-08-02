@@ -16,6 +16,8 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddLiteDbCache(this IServiceCollection services) => services.AddLiteDbCache(_ => { });
+
     public static IServiceCollection AddLiteDbCache(this IServiceCollection services, Action<LiteDbCacheOptions> setupAction)
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
