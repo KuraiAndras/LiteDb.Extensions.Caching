@@ -113,7 +113,7 @@ public class MultilevelCache : IMultiLevelCache
 
         if (memoryItem is null || memoryItem.Equals(default))
         {
-            var itemString = await _distributedCache.GetStringAsync(key, cancellationToken);
+            var itemString = await _distributedCache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
 
             return !string.IsNullOrWhiteSpace(itemString)
                 ? serializerOverride(itemString)
@@ -156,7 +156,7 @@ public class MultilevelCache : IMultiLevelCache
     {
         var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
 
-        await semaphore.WaitAsync(cancellationToken);
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -164,7 +164,7 @@ public class MultilevelCache : IMultiLevelCache
 
             var serializedItem = serializerOverride(item);
 
-            await _distributedCache.SetStringAsync(key, serializedItem, persistentEntry, cancellationToken);
+            await _distributedCache.SetStringAsync(key, serializedItem, persistentEntry, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -204,7 +204,7 @@ public class MultilevelCache : IMultiLevelCache
     {
         var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
 
-        await semaphore.WaitAsync(cancellationToken);
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -212,14 +212,14 @@ public class MultilevelCache : IMultiLevelCache
 
             if (memoryItem is null || memoryItem.Equals(default))
             {
-                var itemString = await _distributedCache.GetStringAsync(key, cancellationToken);
+                var itemString = await _distributedCache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
 
                 T item;
                 if (string.IsNullOrWhiteSpace(itemString))
                 {
-                    item = await factory(cancellationToken);
+                    item = await factory(cancellationToken).ConfigureAwait(false);
 
-                    await _distributedCache.SetStringAsync(key, serializeOverride(item), persistentEntry, cancellationToken);
+                    await _distributedCache.SetStringAsync(key, serializeOverride(item), persistentEntry, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
