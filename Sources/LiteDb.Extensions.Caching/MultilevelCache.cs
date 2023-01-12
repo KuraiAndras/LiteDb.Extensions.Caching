@@ -23,7 +23,7 @@ public interface IMultiLevelCache
     Task<T?> GetAsync<T>
     (
         string key,
-        Func<string, T> serializerOverride,
+        Func<string, T?> serializerOverride,
         CancellationToken cancellationToken = default
     );
 
@@ -56,7 +56,7 @@ public interface IMultiLevelCache
         CancellationToken cancellationToken = default
     );
 
-    Task<T> GetOrSetAsync<T>
+    Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
@@ -65,7 +65,7 @@ public interface IMultiLevelCache
         CancellationToken cancellationToken = default
     );
 
-    Task<T> GetOrSetAsync<T>
+    Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
@@ -75,14 +75,14 @@ public interface IMultiLevelCache
         CancellationToken cancellationToken = default
     );
 
-    Task<T> GetOrSetAsync<T>
+    Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
         MemoryCacheEntryOptions memoryEntry,
         DistributedCacheEntryOptions persistentEntry,
         Func<T, string> serializeOverride,
-        Func<string, T> deSerializeOverride,
+        Func<string, T?> deSerializeOverride,
         CancellationToken cancellationToken = default
     );
 }
@@ -105,13 +105,13 @@ public class MultilevelCache : IMultiLevelCache
     public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) => GetAsync<T>(key, _serializer, cancellationToken);
 
     public Task<T?> GetAsync<T>(string key, IMultiLevelCacheSerializer serializerOverride, CancellationToken cancellationToken = default) =>
-        GetAsync(key, item => serializerOverride.DeSerialize<T>(item)!, cancellationToken);
+        GetAsync(key, item => serializerOverride.DeSerialize<T>(item), cancellationToken);
 
-    public async Task<T?> GetAsync<T>(string key, Func<string, T> serializerOverride, CancellationToken cancellationToken = default)
+    public async Task<T?> GetAsync<T>(string key, Func<string, T?> serializerOverride, CancellationToken cancellationToken = default)
     {
         var memoryItem = _memoryCache.Get(key);
 
-        if (memoryItem is null || memoryItem.Equals(default))
+        if (memoryItem is null)
         {
             var itemString = await _distributedCache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
 
@@ -172,7 +172,7 @@ public class MultilevelCache : IMultiLevelCache
         }
     }
 
-    public Task<T> GetOrSetAsync<T>
+    public Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
@@ -181,7 +181,7 @@ public class MultilevelCache : IMultiLevelCache
         CancellationToken cancellationToken = default
     ) => GetOrSetAsync(key, factory, memoryEntry, persistentEntry, _serializer, cancellationToken);
 
-    public Task<T> GetOrSetAsync<T>
+    public Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
@@ -189,16 +189,16 @@ public class MultilevelCache : IMultiLevelCache
         DistributedCacheEntryOptions persistentEntry,
         IMultiLevelCacheSerializer serializerOverride,
         CancellationToken cancellationToken = default
-    ) => GetOrSetAsync(key, factory, memoryEntry, persistentEntry, x => serializerOverride.Serialize(x), x => serializerOverride.DeSerialize<T>(x)!, cancellationToken);
+    ) => GetOrSetAsync(key, factory, memoryEntry, persistentEntry, x => serializerOverride.Serialize(x), x => serializerOverride.DeSerialize<T>(x), cancellationToken);
 
-    public async Task<T> GetOrSetAsync<T>
+    public async Task<T?> GetOrSetAsync<T>
     (
         string key,
         Func<CancellationToken, Task<T>> factory,
         MemoryCacheEntryOptions memoryEntry,
         DistributedCacheEntryOptions persistentEntry,
         Func<T, string> serializeOverride,
-        Func<string, T> deSerializeOverride,
+        Func<string, T?> deSerializeOverride,
         CancellationToken cancellationToken = default
     )
     {
@@ -210,11 +210,11 @@ public class MultilevelCache : IMultiLevelCache
         {
             var memoryItem = _memoryCache.Get(key);
 
-            if (memoryItem is null || memoryItem.Equals(default))
+            if (memoryItem is null)
             {
                 var itemString = await _distributedCache.GetStringAsync(key, cancellationToken).ConfigureAwait(false);
 
-                T item;
+                T? item;
                 if (string.IsNullOrWhiteSpace(itemString))
                 {
                     item = await factory(cancellationToken).ConfigureAwait(false);

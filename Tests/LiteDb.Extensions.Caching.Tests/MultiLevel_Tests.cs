@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 
 using Newtonsoft.Json;
 
@@ -39,7 +39,7 @@ public class MultiLevel_Tests : CacheTestBase
         var storedValue = await MultiLevelCache.GetAsync<TestMessage>(key);
 
         // Assert
-        storedValue.Should().Be(default);
+        storedValue.Should().Be(null);
     }
 
     [Theory]
