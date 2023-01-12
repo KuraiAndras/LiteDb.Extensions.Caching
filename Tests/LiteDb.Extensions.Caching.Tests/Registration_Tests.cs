@@ -167,4 +167,26 @@ public class Registration_Tests
             setup.Should().Throw<ArgumentNullException>();
         }
     }
+
+    [Fact]
+    public async Task Setup_Uses_Connection_Mode()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var setup = async () =>
+        {
+            services.AddLiteDbCache(o => o.Connection = ConnectionType.Shared);
+
+            var provider  = services.BuildServiceProvider();
+
+            _ = provider.GetRequiredService<ILiteDbCache>();
+
+            await provider.DisposeAsync();
+        };
+
+        // Assert
+        await setup.Should().NotThrowAsync();
+    }
 }
