@@ -50,7 +50,7 @@ class Build : NukeBuild
     [Parameter("Sonar host URL")] readonly string SonarHostUrl = default!;
     [Parameter("Sonar organization")] readonly string SonarOrganization = default!;
 
-    [Solution] readonly Solution Solution = default!;
+    [Solution(GenerateProjects = true)] readonly Solution Solution = default!;
     [GitVersion] readonly GitVersion GitVersion = default!;
 
     AbsolutePath SourceDirectory => RootDirectory / "Sources";
@@ -101,7 +101,10 @@ class Build : NukeBuild
     Target MoveArtifacts => _ => _
         .DependsOn(Pack)
         .Executes(() =>
-            EnumerateFiles(Solution.Directory, "*.nupkg", SearchOption.AllDirectories)
+            Solution
+                .AllProjects
+                .Where(p => p != Solution.Build)
+                .SelectMany(p => EnumerateFiles(p, "*.nupkg", SearchOption.AllDirectories))
                 .Where(n => !n.EndsWith("symbols.nupkg"))
                 .ForEach(x => CopyFileToDirectory(x, ArtifactsDirectory, FileExistsPolicy.Overwrite)));
 
