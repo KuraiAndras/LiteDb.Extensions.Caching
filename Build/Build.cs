@@ -104,7 +104,7 @@ class Build : NukeBuild
             Solution
                 .AllProjects
                 .Where(p => p != Solution.Build)
-                .SelectMany(p => EnumerateFiles(p, "*.nupkg", SearchOption.AllDirectories))
+                .SelectMany(p => EnumerateFiles(p.Directory, "*.nupkg", SearchOption.AllDirectories))
                 .Where(n => !n.EndsWith("symbols.nupkg"))
                 .ForEach(x => CopyFileToDirectory(x, ArtifactsDirectory, FileExistsPolicy.Overwrite)));
 
