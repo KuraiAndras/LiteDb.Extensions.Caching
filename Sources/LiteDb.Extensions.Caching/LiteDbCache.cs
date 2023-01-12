@@ -32,6 +32,7 @@ public sealed class LiteDbCache : ILiteDbCache, IDisposable
 
         var connectionString = new ConnectionString(liteDbOptions.CachePath);
         if (liteDbOptions.Password is not null) connectionString.Password = liteDbOptions.Password;
+        if (liteDbOptions.Connection is not null) connectionString.Connection = liteDbOptions.Connection.Value;
 
         _db = new LiteDatabase(connectionString);
     }
