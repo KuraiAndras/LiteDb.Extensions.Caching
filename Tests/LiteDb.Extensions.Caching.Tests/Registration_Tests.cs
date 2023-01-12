@@ -41,7 +41,7 @@ public class Registration_Tests
         var dbPath = Path.Combine("Caches", $"{Guid.NewGuid()}.db");
 
         var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
+            .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 { $"{nameof(LiteDbCacheOptions)}:{nameof(LiteDbCacheOptions.CachePath)}", dbPath },
             })
