@@ -96,7 +96,8 @@ class Build : NukeBuild
             DotNetPack(s => s
                 .SetProject(Solution)
                 .SetConfiguration(Configuration)
-                .SetVersion(GitVersion.NuGetVersionV2)));
+                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetPackageReleaseNotes(File.ReadAllText(Solution.Directory / "CHANGELOG.md"))));
 
     Target MoveArtifacts => _ => _
         .DependsOn(Pack)
