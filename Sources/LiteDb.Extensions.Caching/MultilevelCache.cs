@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 
+using AsyncKeyedLock;
+
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -89,7 +91,11 @@ public interface IMultiLevelCache
 
 public class MultilevelCache : IMultiLevelCache
 {
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
+    private readonly AsyncKeyedLocker<string> _asyncKeyedLocker = new(o =>
+    {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     private readonly IMemoryCache _memoryCache;
     private readonly IDistributedCache _distributedCache;
@@ -154,21 +160,13 @@ public class MultilevelCache : IMultiLevelCache
         CancellationToken cancellationToken = default
     )
     {
-        var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
-
-        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-        try
+        using (await _asyncKeyedLocker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
             _memoryCache.Set(key, item, memoryEntry);
 
             var serializedItem = serializerOverride(item);
 
             await _distributedCache.SetStringAsync(key, serializedItem, persistentEntry, cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            semaphore.Release();
         }
     }
 
@@ -202,11 +200,7 @@ public class MultilevelCache : IMultiLevelCache
         CancellationToken cancellationToken = default
     )
     {
-        var semaphore = _locks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
-
-        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-        try
+        using (await _asyncKeyedLocker.LockAsync(key, cancellationToken).ConfigureAwait(false))
         {
             var memoryItem = _memoryCache.Get(key);
 
@@ -234,10 +228,6 @@ public class MultilevelCache : IMultiLevelCache
             {
                 return (T)memoryItem;
             }
-        }
-        finally
-        {
-            semaphore.Release();
         }
     }
 }
