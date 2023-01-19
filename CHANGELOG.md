@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.0
+- Use `AsyncKeyedLock` instead of semaphores in a concurrent dictionary
+
 ## 2.4.0
 - Fix nullability attributes on `IMultiLevelCache`
 
