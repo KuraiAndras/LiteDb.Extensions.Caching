@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.1
+- Update `AsyncKeyedLock`
+
 ## 2.5.0
 - Use `AsyncKeyedLock` instead of semaphores in a concurrent dictionary
 
